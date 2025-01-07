@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: httpbin-consumer
-        image: acrackintheice/httpbin-consumer
+        image: acrackintheice/httpbin-consumer:2
         env:
           - name: "URL"
             value: "http://httpbin.httpbin/status/200"
@@ -34,6 +34,32 @@ spec:
                 fieldPath: status.podIP
         resources:
           limits: 
-            memory: 1Gi
-            cpu: 500m
+            memory: 100Mi
+            cpu: 50m
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: httpbin-consumer
+  namespace: httpbin-consumer
+spec:
+  maxReplicas: 3
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 80
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 80
+        type: Utilization
+    type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: httpbin-consumer
 ---
